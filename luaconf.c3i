@@ -1,0 +1,30 @@
+module lua;
+
+const MAXSTACK = 1000000;
+
+/* predefined options for INT_TYPE */
+const INT_INT = 1;
+const INT_LONG = 2;
+const INT_LONGLONG = 3;
+
+/* predefined options for FLOAT_TYPE */
+const FLOAT_FLOAT = 1;
+const FLOAT_DOUBLE = 2;
+const FLOAT_LONGDOUBLE = 3;
+
+
+const BUFFERSIZE = (int)(16 * (void*).sizeof * Number.sizeof);
+
+/*
+** LUA_PATH_SEP is the character that separates templates in a path.
+** LUA_PATH_MARK is the string that marks the substitution points in a
+** template.
+** LUA_EXEC_DIR in a Windows path is replaced by the executable's
+** directory.
+*/
+const PATH_SEP = ";";
+const PATH_MARK = "?";
+const EXEC_DIR = "!";
+
+
+const IDSIZE = 60;

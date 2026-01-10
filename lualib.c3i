@@ -1,0 +1,27 @@
+module lua;
+
+const COLIBNAME = 	"coroutine";
+const TABLIBNAME = 	"table";
+const IOLIBNAME = 	"io";
+const OSLIBNAME = 	"os";
+const STRLIBNAME = 	"string";
+const UTF8LIBNAME = "utf8";
+const MATHLIBNAME = "math";
+const DBLIBNAME = 	"debug";
+const LOADLIBNAME = "package";
+
+extern fn void State.open_base		(State* l) @cname("luaopen_base");
+extern fn void State.open_coroutine	(State* l) @cname("luaopen_coroutine");
+extern fn void State.open_table		(State* l) @cname("luaopen_table");
+extern fn void State.open_io		(State* l) @cname("luaopen_io");
+extern fn void State.open_os		(State* l) @cname("luaopen_os");
+extern fn void State.open_string	(State* l) @cname("luaopen_string");
+extern fn void State.open_utf8		(State* l) @cname("luaopen_utf8");
+extern fn void State.open_math		(State* l) @cname("luaopen_math");
+extern fn void State.open_debug		(State* l) @cname("luaopen_debug");
+extern fn void State.open_package	(State* l) @cname("luaopen_package");
+
+/* open all previous libraries */
+extern fn void State.openlibs(State* l) @cname("luaL_openlibs");
+
+macro lua_assert(x)	{ return ((void)0); }

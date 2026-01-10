@@ -1,0 +1,396 @@
+module lua;
+
+const VERSION_MAJOR	= 	"5";
+const VERSION_MINOR	= 	"4";
+const VERSION_RELEASE = "2";
+
+const VERSION_NUM = 504;
+const VERSION_RELEASE_NUM = VERSION_NUM * 100 + 0;
+
+const MULTRET = -1;
+
+const REGISTRYINDEX = -MAXSTACK - 1000;
+
+/* thread status */
+const OK = 			0;
+const YIELD	= 		1;
+const ERRRUN = 		2;
+const ERRSYNTAX	= 	3;
+const ERRMEM = 		4;
+const ERRERR = 		5;
+const ERRFILE = 	6;
+
+typedef State = void*;
+
+/*
+** basic types
+*/
+const TNONE	= 			-1;
+const TNIL = 			0;
+const TBOOLEAN = 		1;
+const TLIGHTUSERDATA = 	2;
+const TNUMBER = 		3;
+const TSTRING = 		4;
+const TTABLE = 			5;
+const TFUNCTION = 		6;
+const TUSERDATA	= 		7;
+const TTHREAD =			8;
+
+const NUMTYPES = 		9;
+
+/* minimum Lua stack available to a C function */
+const MINSTACK = 20;
+
+
+/* predefined values in the registry */
+const RIDX_MAINTHREAD = 1;
+const RIDX_GLOBALS = 	2;
+const RIDX_LAST = 		RIDX_GLOBALS;
+
+/* type of numbers in Lua */
+alias Number @if(uptr.sizeof == 4) = float;
+alias Number @if(uptr.sizeof == 8) = double;
+
+/* type for integer functions */
+alias Integer @if(uptr.sizeof == 4) = int;
+alias Integer @if(uptr.sizeof == 8) = long;
+
+/* unsigned integer type */
+alias Unsigned @if(uptr.sizeof == 4) = uint;
+alias Unsigned @if(uptr.sizeof == 8) = ulong;
+
+/* type for continuation-function contexts */
+alias KContext = isz;
+
+/*
+** Type for C functions registered with Lua
+*/
+alias CFunction = fn int (State* l);
+
+/*
+** Type for continuation functions
+*/
+alias KFunction = fn int (State* l, int status, KContext ctx);
+
+/*
+** Type for functions that read/write blocks when loading/dumping Lua chunks
+*/
+alias Reader = fn ZString (State* l, void* ud, usz sz);
+alias Writer = fn int (State* l, void* p, usz sz, void* ud);
+
+/*
+** Type for memory-allocation functions
+*/
+alias Alloc = fn void* (void* ud, void* ptr, usz osize, usz nsize);
+
+/*
+** Type for warning functions
+*/
+alias WarnFunction = fn void* (void *ud, ZString msg, int tocont);
+
+/*
+** RCS ident string
+*/
+/*
+extern const char lua_ident[];
+*/
+
+
+/*
+** state manipulation
+*/
+extern fn State* 	newstate(Alloc lua_alloc, void* ud) @cname("lua_newstate");
+extern fn void 		State.close(&l) 					@cname("lua_close");
+extern fn State* 	State.newthread(&l) 				@cname("lua_newthread");
+extern fn int 		State.resetthread(&l) 				@cname("lua_resetthread");
+
+extern fn CFunction State.atpanic(&l, CFunction panicf) @cname("lua_atpanic");
+extern fn Number 	State.version(&l) 					@cname("lua_version");
+
+/*
+** basic stack manipulation
+*/
+extern fn int 	State.absindex	(&l, int idx) 					@cname("lua_absindex");
+extern fn int 	State.gettop	(&l) 							@cname("lua_gettop");
+extern fn void 	State.settop	(&l, int idx) 					@cname("lua_settop");
+extern fn void 	State.pushvalue	(&l, int idx) 					@cname("lua_pushvalue");
+extern fn void 	State.rotate	(&l, int idx, int n) 			@cname("lua_rotate");
+extern fn void 	State.copy		(&l, int fromidx, int toidx) 	@cname("lua_copy");
+extern fn int 	State.checkstack(&l, int n) 					@cname("lua_checkstack");
+
+extern fn void 	State.xmove		(&l, State *to, int n) 			@cname("lua_xmove");
+
+/*
+** access functions (stack -> C)
+*/
+extern fn int 		State.isnumber		(&l, int idx) @cname("lua_isnumber");
+extern fn int 		State.isstring		(&l, int idx) @cname("lua_isstring");
+extern fn int 		State.iscfunction	(&l, int idx) @cname("lua_iscfunction");
+extern fn int 		State.isinteger		(&l, int idx) @cname("lua_isinteger");
+extern fn int 		State.isuserdata	(&l, int idx) @cname("lua_isuserdata");
+extern fn int 		State.type			(&l, int idx) @cname("lua_type");
+extern fn ZString 	State.typename		(&l, int idx) @cname("lua_typename");
+
+extern fn Number 	State.tonumberx		(&l, int idx, int* isnum) 	@cname("lua_tonumberx");
+extern fn Integer 	State.tointegerx	(&l, int idx, int* isnum) 	@cname("lua_tointegerx");
+extern fn int 		State.toboolean		(&l, int idx) 				@cname("lua_toboolean");
+extern fn ZString 	State.tolstring		(&l, int idx, usz* len) 	@cname("lua_tolstring");
+extern fn Unsigned 	State.rawlen		(&l, int idx) 				@cname("lua_rawlen");
+extern fn CFunction State.tocfunction	(&l, int idx) 				@cname("lua_tocfunction");
+extern fn void* 	State.touserdata	(&l, int idx) 				@cname("lua_touserdata");
+extern fn State* 	State.tothread		(&l, int idx) 				@cname("lua_tothread");
+extern fn void* 	State.topointer		(&l, int idx) 				@cname("lua_topointer");
+
+/*
+** Comparison and arithmetic functions
+*/
+const OPADD = 	0;	/* ORDER TM, ORDER OP */
+const OPSUB = 	1;
+const OPMUL	= 	2;
+const OPMOD	=	3;
+const OPPOW	= 	4;
+const OPDIV	= 	5;
+const OPIDIV = 	6;
+const OPBAND = 	7;
+const OPBOR = 	8;
+const OPBXOR = 	9;
+const OPSHL = 	10;
+const OPSHR = 	11;
+const OPUNM = 	12;
+const OPBNOT = 	13;
+
+extern fn void State.arith(&l, int op) @cname("lua_arith");
+
+const OPEQ = 0;
+const OPLT = 1;
+const OPLE = 2;
+
+extern fn void State.rawequal	(&l, int idx1, int idx2) 			@cname("lua_rawequal");
+extern fn void State.lua_compare(&l, int idx1, int idx2, int op) 	@cname("lua_compare");
+
+/*
+** push functions (C -> stack)
+*/
+extern fn void State.pushnil			(&l) 							@cname("lua_pushnil");
+extern fn void State.pushnumber			(&l, Number z) 					@cname("lua_pushnumber");
+extern fn void State.pushinteger		(&l, Integer n) 				@cname("lua_pushinteger");
+extern fn ZString State.pushlstring		(&l, ZString s, usz len) 		@cname("lua_pushlstring");
+extern fn ZString State.pushstring		(&l, ZString s) 				@cname("lua_pushstring");
+extern fn ZString State.pushvfstring	(&l, ZString fmt, char* argp) 	@cname("lua_pushvfstring");
+extern fn ZString State.pushfstring		(&l, ZString fmt, ...) 			@cname("lua_pushfstring");
+extern fn void State.pushcclosure		(&l, CFunction func, int n) 	@cname("lua_pushcclosure");
+extern fn void State.pushboolean		(&l, int b)					 	@cname("lua_pushboolean");
+extern fn void State.pushlightuserdata	(&l, void* p)				 	@cname("lua_pushlightuserdata");
+extern fn int State.pushthread			(&l) 							@cname("lua_pushthread");
+
+/*
+** get functions (Lua -> stack)
+*/
+extern fn int State.getglobal	(&l, ZString name) 			@cname("lua_getglobal");
+extern fn int State.gettable	(&l, int idx) 				@cname("lua_gettable");
+extern fn int State.getfield	(&l, int idx, ZString k) 	@cname("lua_getfield");
+extern fn int State.geti		(&l, int idx, Integer n) 	@cname("lua_geti");
+extern fn int State.rawget		(&l, int idx) 				@cname("lua_rawget");
+extern fn int State.rawgeti		(&l, int idx, Integer n) 	@cname("lua_rawgeti");
+extern fn int State.rawgetp		(&l, int idx, void* p) 		@cname("lua_rawgetp");
+
+extern fn void 	State.createtable(&l, int narr, int nrec) 		@cname("lua_createtable");
+extern fn void* State.newuserdatauv(&l, usz sz, int nuvalue) 	@cname("lua_newuserdatauv");
+extern fn int 	State.getmetatable(&l, int objindex) 			@cname("lua_getmetatable");
+extern fn int 	State.getiuservalue(&l, int idx, int n) 		@cname("lua_getiuservalue");
+
+/*
+** set functions (stack -> Lua)
+*/
+extern fn void 	State.setglobal		(&l, ZString name) 			@cname("lua_setglobal");
+extern fn void 	State.settable		(&l, int idx) 				@cname("lua_settable");
+extern fn void 	State.setfield		(&l, int idx, ZString k) 	@cname("lua_setfield");
+extern fn void 	State.seti			(&l, int idx, Integer n) 	@cname("lua_seti");
+extern fn void 	State.rawset		(&l, int idx) 				@cname("lua_rawset");
+extern fn void 	State.rawseti		(&l, int idx, Integer n) 	@cname("lua_rawseti");
+extern fn void 	State.rawsetp		(&l, int idx, void* p) 		@cname("lua_rawsetp");
+extern fn int 	State.setmetatable	(&l, int objindex) 			@cname("lua_setmetatable");
+extern fn int 	State.setiuservalue	(&l, int idx, int n) 		@cname("lua_setiuservalue");
+
+/*
+** 'load' and 'call' functions (load and run Lua code)
+*/
+extern fn int State.callk(State *l, int nargs, int nresults,
+                    KContext ctx, KFunction k) @cname("lua_callk");
+macro int State.call(&l, n, r) { return l.callk(n, r, 0, null); }
+
+extern fn int State.pcallk(State *l, int nargs, int nresults, int errfunc,
+                    KContext ctx, KFunction k) @cname("lua_pcallk");
+macro int State.pcall(State *l, int n, int r, int f) { return l.pcallk(n, r, f, 0, null); }
+
+extern fn int State.load(&l, Reader reader, void* ud, ZString chunkname, ZString mode) 	@cname("lua_load");
+extern fn int State.dump(&l, Writer writer, void* data, int strip) 						@cname("lua_dump");
+
+/*
+** coroutine functions
+*/
+extern fn int State.yieldk(&l, int nresults, KContext ctx, KFunction k) @cname("lua_yieldk");
+extern fn int State.resume(&l, State* from, int narg, int* nres) 		@cname("lua_resume");
+extern fn int State.status(&l) 		@cname("lua_status");
+extern fn int State.isyieldable(&l) @cname("lua_isyieldable");
+
+macro int State.yield(&l, int n) { return l.yieldk(n, 0, null); }
+
+
+/*
+** Warning-related functions
+*/
+extern fn void State.setwarnf(&l, WarnFunction f, void* ud) @cname("lua_setwarnf");
+extern fn void State.warning(&l, ZString msg, int tocont) 	@cname("lua_warning");
+
+/*
+** garbage-collection function and options
+*/
+const GCSTOP = 0;
+const GCRESTART = 1;
+const GCCOLLECT = 2;
+const GCCOUNT = 3;
+const GCCOUNTB = 4;
+const GCSTEP = 5;
+const GCSETPAUSE = 6;
+const GCSETSTEPMUL = 7;
+const GCISRUNNING = 9;
+const GCGEN = 10;
+const GCINC = 11;
+
+extern fn int State.gc(&l, int what, ...) @cname("lua_gc");
+
+
+/*
+** miscellaneous functions
+*/
+extern fn int 	State.error	(&l) 			@cname("lua_error");
+
+extern fn int 	State.next	(&l, int idx) 	@cname("lua_next");
+
+extern fn void 	State.concat(&l, int n) 	@cname("lua_concat");
+extern fn void 	State.len	(&l, int idx) 	@cname("lua_len");
+
+extern fn usz 	State.stringtonumber(&l, ZString s) 		@cname("lua_stringtonumber");
+
+extern fn Alloc State.getallocf		(&l, void** ud) 		@cname("lua_getallocf");
+extern fn void 	State.setallocf		(&l, Alloc f, void* ud) @cname("lua_setallocf");
+
+extern fn void 	State.toclose		(&l, int idx) 			@cname("lua_toclose");
+
+/*
+** {==============================================================
+** some useful macros
+** ===============================================================
+*/
+
+macro void* 	State.getextraspace(&l) { return (void*)((char*)(&l) - 0); }
+
+macro Number 	State.tonumber	(&l, int idx) { return l.tonumberx(idx, null); }
+macro Integer 	State.tointeger	(&l, int idx) { return l.tointegerx(idx, null); }
+
+macro void State.pop(&l, int n) { l.settop(-(n)-1); }
+
+macro void State.newtable(&l) { l.createtable(0, 0); }
+
+macro void State.register(&l, ZString name, CFunction func) { l.pushcclosure(func, 0); l.setglobal(name); }
+
+macro void State.pushcfunction(&l, CFunction func) { l.pushcclosure(func, 0); }
+
+macro int State.isfunction		(&l, int n) { return l.type(n) == TFUNCTION; }
+macro int State.istable			(&l, int n) { return l.type(n) == TTABLE; }
+macro int State.islightuserdata	(&l, int n) { return l.type(n) == TLIGHTUSERDATA; }
+macro int State.isnil			(&l, int n) { return l.type(n) == TNIL; }
+macro int State.isboolean		(&l, int n) { return l.type(n) == TBOOLEAN; }
+macro int State.isthread		(&l, int n) { return l.type(n) == TTHREAD; }
+macro int State.isnone			(&l, int n) { return l.type(n) == TNONE; }
+macro int State.isnoneornil		(&l, int n) { return l.type(n) <= 0; }
+
+macro void State.pushliteral(&l, ZString s) { l.pushstring(s); }
+
+macro void State.pushglobaltable(&l) { l.rawgeti(REGISTRYINDEX, RIDX_GLOBALS); }
+
+macro ZString State.tostring(&l, int idx) { return l.tolstring(idx, null); }
+
+macro void State.insert(&l, int idx) { l.rotate(idx, 1); }
+
+macro void State.remove(&l, int idx) { l.rotate(idx, -1); l.pop(1); }
+
+macro void State.replace(&l, int idx) { l.copy(-1, idx); l.pop(1); }
+
+
+/* ============================================================== */
+
+/*
+** ======================================================================
+** Debug API
+** =======================================================================
+*/
+
+
+/*
+** Event codes
+*/
+
+const HOOKCALL = 		0;
+const HOOKRET = 		1;
+const HOOKLINE = 		2;
+const HOOKCOUNT = 		3;
+const HOOKTAILCALL = 	4;
+
+
+/*
+** Event masks
+*/
+const MASKCALL = 	(1 << HOOKCALL);
+const MASKRET = 	(1 << HOOKRET);
+const MASKLINE = 	(1 << HOOKLINE);
+const MASKCOUNT = 	(1 << HOOKCOUNT);
+
+alias Debug = void*;  /* activation record */
+
+/* Functions to be called by the debugger in specific events */
+alias Hook = fn void(State* l, Debug* ar);
+
+extern fn int 		State.getstack(&l, int level, Debug *ar) 	@cname("lua_getstack");
+extern fn int 		State.getinfo(&l, ZString what, Debug *ar) 	@cname("lua_getinfo");
+extern fn ZString 	State.getlocal(&l, Debug *ar, int n) 		@cname("lua_getlocal");
+extern fn ZString 	State.setlocal(&l, Debug *ar, int n) 		@cname("lua_setlocal");
+extern fn ZString 	State.getupvalue(&l, int funcindex, int n) 	@cname("lua_getupvalue");
+extern fn ZString 	State.setupvalue(&l, int funcindex, int n) 	@cname("lua_setupvalue");
+
+extern fn void* 	State.upvalueid(&l, int fidx, int n) 		@cname("lua_upvalueid");
+extern fn void 		State.upvaluejoin(&l, int fidx1, int n1,
+                                            int fidx2, int n2) 	@cname("lua_upvaluejoin");
+
+extern fn void 		State.sethook(&l, Hook func, int mask, int count) @cname("lua_sethook");
+extern fn Hook 		State.gethook(&l) 		@cname("lua_gethook");
+extern fn int 		State.gethookmask(&l) 	@cname("lua_gethookmask");
+extern fn int 		State.gethookcount(&l) 	@cname("lua_gethookcount");
+
+extern fn int 		State.setcstacklimit(&l, uint limit) @cname("lua_setcstacklimit");
+
+/*
+alias CallInfo = void*;
+
+struct Debug {
+  int event;
+  int idx;	/* (n) */
+  ZString namewhat;	/* (n) 'global', 'local', 'field', 'method' */
+  ZString what;	/* (S) 'Lua', 'C', 'main', 'tail' */
+  ZString source;	/* (S) */
+  isz srclen;	/* (S) */
+  int currentline;	/* (l) */
+  int linedefined;	/* (S) */
+  int lastlinedefined;	/* (S) */
+  char nups;	/* (u) number of upvalues */
+  char nparams;/* (u) number of parameters */
+  ichar isvararg;        /* (u) */
+  ichar istailcall;	/* (t) */
+  ushort ftransfer;   /* (r) index of first value transferred */
+  ushort ntransfer;   /* (r) number of transferred values */
+  char[IDSIZE] short_src; /* (S) */
+  /* private part */
+  CallInfo *i_ci;  /* active function */
+}
+*/
