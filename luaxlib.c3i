@@ -75,8 +75,8 @@ extern fn void State.l_requiref(&l, ZString modname, CFunction openf, int glb) @
 ** ===============================================================
 */
 
-macro void State.@l_newlibtable(&l, #table) { l.createtable(0, #table.sizeof/table.[0].sizeof - 1); }
-macro void State.l_newlib(&l, L_Reg* lib) { l.checkversion(); l.l_newlibtable(lib); l.l_setfuncs(lib, o);}
+macro void State.l_newlibtable(&l, L_Reg* table) { l.createtable(0, $sizeof(table)/$sizeof(table[0]) - 1); }
+macro void State.l_newlib(&l, L_Reg* lib) { l.checkversion(); l.l_newlibtable(lib); l.l_setfuncs(lib, 0);}
 macro void State.@l_argcheck(&l, #cond, int arg, ZString extramsg) { #cond || l.l_argerror(arg, extramsg); }
 macro void State.@l_argexpected(&l, #cond, int arg, ZString tname) { #cond || l.l_typeerror(arg, tname); }
 macro void State.l_checkstring(&l, n) { return l.l_checklstring(n, null); }
