@@ -297,14 +297,14 @@ macro void State.register(&l, ZString name, CFunction func) { l.pushcclosure(fun
 
 macro void State.pushcfunction(&l, CFunction func) { l.pushcclosure(func, 0); }
 
-macro int State.isfunction		(&l, int n) { return l.type(n) == TFUNCTION; }
-macro int State.istable			(&l, int n) { return l.type(n) == TTABLE; }
-macro int State.islightuserdata	(&l, int n) { return l.type(n) == TLIGHTUSERDATA; }
-macro int State.isnil			(&l, int n) { return l.type(n) == TNIL; }
-macro int State.isboolean		(&l, int n) { return l.type(n) == TBOOLEAN; }
-macro int State.isthread		(&l, int n) { return l.type(n) == TTHREAD; }
-macro int State.isnone			(&l, int n) { return l.type(n) == TNONE; }
-macro int State.isnoneornil		(&l, int n) { return l.type(n) <= 0; }
+macro bool State.isfunction 		(&l, int n) { return l.type(n) == TFUNCTION; }
+macro bool State.istable			(&l, int n) { return l.type(n) == TTABLE; }
+macro bool State.islightuserdata	(&l, int n) { return l.type(n) == TLIGHTUSERDATA; }
+macro bool State.isnil   		    (&l, int n) { return l.type(n) == TNIL; }
+macro bool State.isboolean		    (&l, int n) { return l.type(n) == TBOOLEAN; }
+macro bool State.isthread		    (&l, int n) { return l.type(n) == TTHREAD; }
+macro bool State.isnone			    (&l, int n) { return l.type(n) == TNONE; }
+macro bool State.isnoneornil		(&l, int n) { return l.type(n) <= 0; }
 
 macro void State.pushliteral(&l, ZString s) { l.pushstring(s); }
 
