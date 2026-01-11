@@ -1,7 +1,3 @@
-Here’s a **clean, honest, and beginner-friendly README** based on what you wrote, keeping your tone (“work in progress, open to changes”) but making it clear and professional. You can paste this directly into `README.md`.
-
----
-
 # Lua for C3
 
 A **Lua runtime/binding for the C3 programming language**.
@@ -134,14 +130,3 @@ Since this is an early project, **breaking changes may occur**.
 ## License
 
 This project is licensed under the **MIT License**, the same license used by Lua.
-
----
-
-If you want, I can also:
-
-* simplify the example for beginners
-* add a “Design goals” section
-* align the API closer to Lua’s original C API
-* help you write a CONTRIBUTING.md
-
-Just tell me 👍
