@@ -1,72 +1,69 @@
-module lua;
+module lua54::lua;
 
-struct L_Reg {
+struct LuaLReg {
   ZString name;
-  CFunction func;
+  LuaCFunction func;
 }
 
-const NUMSIZES	= Integer.sizeof*16 + Number.sizeof;
+const NUMSIZES	= LuaInteger.sizeof*16 + LuaNumber.sizeof;
 
-extern fn void State.checkversion(&l, Number ver = VERSION_NUM, isz sz = NUMSIZES) @cname("luaL_checkversion_");
+extern fn void checkversion(LuaState* l, LuaNumber ver = VERSION_NUM, isz sz = NUMSIZES) @cname("luaL_checkversion_");
 
-extern fn int		State.l_getmetafield(&l, int arg, ZString e) 			@cname("luaL_getmetafield");
-extern fn int 		State.l_callmeta(&l, int arg, ZString e) 				@cname("luaL_callmeta");
-extern fn ZString 	State.l_tolstring(&l, int idx, isz* e) 					@cname("luaL_tolstring");
-extern fn int 		State.l_argerror(&l, int arg, ZString e) 				@cname("luaL_argerror");
-extern fn int 		State.l_typeerror(&l, int arg, ZString tname) 			@cname("luaL_typeerror");
-extern fn ZString 	State.l_checklstring(&l, int arg, isz* e) 				@cname("luaL_checklstring");
-extern fn ZString 	State.l_optlstring(&l, int arg, ZString def, isz* len) 	@cname("luaL_optlstring");
-extern fn Number 	State.l_checknumber(&l, int arg) 						@cname("luaL_checknumber");
-extern fn Number 	State.l_optnumber(&l, int arg, Number def) 				@cname("luaL_optnumber");
+extern fn int		l_getmetafield		(LuaState* l, int arg, ZString e) 				@cname("luaL_getmetafield");
+extern fn int 		l_callmeta			(LuaState* l, int arg, ZString e) 				@cname("luaL_callmeta");
+extern fn ZString 	l_tolstring			(LuaState* l, int idx, isz* e) 					@cname("luaL_tolstring");
+extern fn int 		l_argerror			(LuaState* l, int arg, ZString e) 				@cname("luaL_argerror");
+extern fn int 		l_typeerror			(LuaState* l, int arg, ZString tname) 			@cname("luaL_typeerror");
+extern fn ZString 	l_checklstring		(LuaState* l, int arg, isz* e) 					@cname("luaL_checklstring");
+extern fn ZString 	l_optlstring		(LuaState* l, int arg, ZString def, isz* len) 	@cname("luaL_optlstring");
+extern fn LuaNumber l_checknumber		(LuaState* l, int arg) 							@cname("luaL_checknumber");
+extern fn LuaNumber l_optnumber			(LuaState* l, int arg, LuaNumber def) 			@cname("luaL_optnumber");
 
-extern fn Integer State.l_checkinteger(&l, int arg, ZString e)	@cname("luaL_checkinteger");
-extern fn Integer State.l_optinteger(&l, int arg, ZString e) 	@cname("luaL_optinteger");
+extern fn LuaInteger l_checkinteger	(LuaState* l, int arg, ZString e)	@cname("luaL_checkinteger");
+extern fn LuaInteger l_optinteger	(LuaState* l, int arg, ZString e) 	@cname("luaL_optinteger");
 
-extern fn void 	State.l_checkstack(&l, int sz, ZString msg) 	@cname("luaL_checkstack");
-extern fn void 	State.l_checktype(&l, int arg, int t) 			@cname("luaL_checktype");
-extern fn void 	State.l_checkany(&l, int arg) 					@cname("luaL_checkany");
+extern fn void 	l_checkstack	(LuaState* l, int sz, ZString msg) 		@cname("luaL_checkstack");
+extern fn void 	l_checktype		(LuaState* l, int arg, int t) 			@cname("luaL_checktype");
+extern fn void 	l_checkany		(LuaState* l, int arg) 					@cname("luaL_checkany");
 
-extern fn int 	State.l_newmetatable(&l, ZString tname) 		@cname("luaL_newmetatable");
-extern fn void 	State.l_setmetatable(&l, ZString tname) 		@cname("luaL_setmetatable");
-extern fn void* State.l_testudata(&l, int ud, ZString tname) 	@cname("luaL_testudata");
-extern fn void* State.l_checkudata(&l, int ud, ZString tname) 	@cname("luaL_checkudata");
+extern fn int 	l_newmetatable	(LuaState* l, ZString tname) 			@cname("luaL_newmetatable");
+extern fn void 	l_setmetatable	(LuaState* l, ZString tname) 			@cname("luaL_setmetatable");
+extern fn void* l_testudata		(LuaState* l, int ud, ZString tname) 	@cname("luaL_testudata");
+extern fn void* l_checkudata	(LuaState* l, int ud, ZString tname) 	@cname("luaL_checkudata");
 
-extern fn void 	State.l_where(&l, int lvl) 		@cname("luaL_where");
-extern fn int 	State.l_error(&l, ZString fmt) 	@cname("luaL_error");
+extern fn void 	l_where(LuaState* l, int lvl) 		@cname("luaL_where");
+extern fn int 	l_error(LuaState* l, ZString fmt) 	@cname("luaL_error");
 
-extern fn int 	State.l_checkoption(&l, int arg, ZString def, ZString* lst) @cname("luaL_checkoption");
+extern fn int 	l_checkoption(LuaState* l, int arg, ZString def, ZString* lst) @cname("luaL_checkoption");
 
-extern fn int 	State.l_fileresult(&l, int stat, ZString fname) 	@cname("luaL_fileresult");
-extern fn int 	State.l_execresult(&l, int stat)					@cname("luaL_execresult");
+extern fn int 	l_fileresult(LuaState* l, int stat, ZString fname) 	@cname("luaL_fileresult");
+extern fn int 	l_execresult(LuaState* l, int stat)					@cname("luaL_execresult");
 
 /* predefined references */
 const NOREF = 	-1;
 const REFNIL = 	-2;
 
-extern fn int 	State.l_ref(&l, int t) 				@cname("luaL_ref");
-extern fn int 	State.l_unref(&l, int t, int ref) 	@cname("luaL_unref");
+extern fn int 	l_ref	(LuaState* l, int t) 			@cname("luaL_ref");
+extern fn int 	l_unref	(LuaState* l, int t, int ref) 	@cname("luaL_unref");
 
-extern fn int 	State.l_loadfilex(&l, ZString filename, ZString mode) @cname("luaL_loadfilex");
-macro int 		State.l_loadfile(&l, ZString f) { return l.l_loadfilex(f, null); }
+extern fn int 	l_loadfilex	(LuaState* l, ZString filename, ZString mode) @cname("luaL_loadfilex");
+macro int 		l_loadfile	(LuaState* l, ZString f) { return lua::l_loadfilex(l, f, null); }
 
 
-extern fn int State.l_loadstring(&l, ZString s) @cname("luaL_loadstring");
-extern fn int State.l_loadbufferx(&l, ZString buff, usz sz, ZString name, ZString mode) @cname("luaL_loadbufferx");
+extern fn int l_loadstring	(LuaState* l, ZString s) @cname("luaL_loadstring");
+extern fn int l_loadbufferx	(LuaState* l, ZString buff, usz sz, ZString name, ZString mode) @cname("luaL_loadbufferx");
 
-extern fn State* l_newstate() @cname("luaL_newstate");
+extern fn LuaState* l_newstate() @cname("luaL_newstate");
 
-extern fn Integer State.l_len(&l, int idx) @cname("luaL_len");
+extern fn LuaInteger l_len(LuaState* l, int idx) @cname("luaL_len");
 
-extern fn void State.l_addgsub(&l, L_Buffer* b, ZString s, ZString p, ZString r) @cname("luaL_addgsub");
-extern fn ZString State.l_gsub(&l, ZString s, ZString p, ZString r) @cname("luaL_gsub");
+extern fn void l_addgsub(LuaState* l, LuaLBuffer* b, ZString s, ZString p, ZString r) @cname("luaL_addgsub");
+extern fn ZString l_gsub(LuaState* l, ZString s, ZString p, ZString r) @cname("luaL_gsub");
 
-extern fn void State.l_setfuncs(&l, L_Reg* funcs, int nup) @cname("luaL_setfuncs");
-
-extern fn int State.l_getsubtable(&l, int idx, ZString fname) @cname("luaL_getsubtable");
-
-extern fn void State.l_traceback(&l, State*  l1, ZString msg, int level) @cname("luaL_traceback");
-
-extern fn void State.l_requiref(&l, ZString modname, CFunction openf, int glb) @cname("luaL_requiref");
+extern fn void l_setfuncs	(LuaState* l, LuaLReg* funcs, int nup) @cname("luaL_setfuncs");
+extern fn int l_getsubtable	(LuaState* l, int idx, ZString fname) @cname("luaL_getsubtable");
+extern fn void l_traceback	(LuaState* l, LuaState*  l1, ZString msg, int level) @cname("luaL_traceback");
+extern fn void l_requiref	(LuaState* l, ZString modname, LuaCFunction openf, int glb) @cname("luaL_requiref");
 
 
 /*
@@ -75,21 +72,21 @@ extern fn void State.l_requiref(&l, ZString modname, CFunction openf, int glb) @
 ** ===============================================================
 */
 
-macro void State.l_newlibtable(&l, L_Reg* table) { l.createtable(0, $sizeof(table)/$sizeof(table[0]) - 1); }
-macro void State.l_newlib(&l, L_Reg* lib) { l.checkversion(); l.l_newlibtable(lib); l.l_setfuncs(lib, 0);}
-macro void State.@l_argcheck(&l, #cond, int arg, ZString extramsg) { #cond || l.l_argerror(arg, extramsg); }
-macro void State.@l_argexpected(&l, #cond, int arg, ZString tname) { #cond || l.l_typeerror(arg, tname); }
-macro void State.l_checkstring(&l, n) { return l.l_checklstring(n, null); }
-macro void State.l_optstring(&l, n, d) { return l.l_optlstring(n, d, null); }
+macro void l_newlibtable(LuaState* l, LuaLReg* table) { lua::createtable(l, 0, $sizeof(table)/$sizeof(table[0]) - 1); }
+macro void l_newlib(LuaState* l, LuaLReg* lib) { lua::checkversion(l); lua::l_newlibtable(l, lib); lua::l_setfuncs(l, lib, 0);}
+macro void @l_argcheck(LuaState* l, #cond, int arg, ZString extramsg) { #cond || lua::l_argerror(l, arg, extramsg); }
+macro void @l_argexpected(LuaState* l, #cond, int arg, ZString tname) { #cond || lua::l_typeerror(l, arg, tname); }
+macro void l_checkstring(LuaState* l, n) { return lua::l_checklstring(l, n, null); }
+macro void l_optstring(LuaState* l, n, d) { return lua::l_optlstring(l, n, d, null); }
 
-macro State.l_typename(&l, i) { return l.typename(l.type(i)); }
-macro State.l_dofile(&l, func) { return l.l_loadfile(L, func) || l.pcall(0, MULTRET, 0); }
-macro int State.l_dostring(&l, s) { return (int)(l.l_loadstring(s) || l.pcall(0, MULTRET, 0)); }
-macro State.l_getmetatable(&l, n) { return l.getfield(REGISTRYINDEX, n); }
+macro l_typename(LuaState* l, i) { return lua::typename(lua::type(l, i)); }
+macro l_dofile(LuaState* l, func) { return lua::l_loadfile(l, func) || lua::pcall(l, 0, MULTRET, 0); }
+macro int l_dostring(LuaState* l, s) { return (int)(lua::l_loadstring(l, s) || lua::pcall(l, 0, MULTRET, 0)); }
+macro l_getmetatable(LuaState* l, n) { return lua::getfield(l, REGISTRYINDEX, n); }
 
-macro State.l_opt(&l,f,n,d) { return l.isnoneornil(L,n) ? d : f(L,n);}
-macro int State.l_loadbuffer(&l, ZString s, usz sz, ZString name) { return l_loadbufferx(l, s, sz, name, null); }
-macro State.l_pushfail(&l) { return l.pushnil();}
+macro l_opt(LuaState* l,f,n,d) { return lua::isnoneornil(l, n) ? d : f(l, n);}
+macro int l_loadbuffer(LuaState* l, ZString s, usz sz, ZString name) { return l_loadbufferx(l, s, sz, name, null); }
+macro l_pushfail(LuaState* l) { return lua::pushnil(l);}
 
 /*
 ** {======================================================
@@ -97,39 +94,39 @@ macro State.l_pushfail(&l) { return l.pushnil();}
 ** =======================================================
 */
 
-struct L_Buffer {
+struct LuaLBuffer {
 	char* b;
 	usz size;
 	usz n;
-	State*  lua;
+	LuaState* lua;
 	union {
 		usz[16] init; // ensure maximum alignment for buffer
 		char[BUFFERSIZE] b_init;  // initial buffer
 	}
 }
 
-macro usz L_Buffer.l_bufflen(&bf) { return bf.n; }
-macro char* L_Buffer.l_buffaddr(&bf) { return bf.b; }
+macro usz l_bufflen(LuaLBuffer* bf) { return bf.n; }
+macro char* l_buffaddr(LuaLBuffer* bf) { return bf.b; }
 
-macro void L_Buffer.l_addchar(&b, char c) { 
+macro void l_addchar(LuaLBuffer* b, char c) { 
  	if (b.n >= b.size) l_prepbuffsize(b, 1); 
  	b.b[b.n++] = c; 
 }
 
-macro void L_Buffer.l_addsize(&b, usz s) { b.n += s; }
+macro void l_addsize(LuaLBuffer* b, usz s) { b.n += s; }
 
-macro void L_Buffer.l_buffsub(&b, usz s) { b.n -= s; }
+macro void l_buffsub(LuaLBuffer* b, usz s) { b.n -= s; }
 
-extern fn void State.l_buffinit(&l, L_Buffer* b) @cname("luaL_buffinit");
-extern fn char* L_Buffer.l_prepbuffsize(&b, usz sz) @cname("luaL_prepbuffsize");
-extern fn void L_Buffer.l_addlstring(&b, ZString s, usz l) @cname("luaL_addlstring");
-extern fn void L_Buffer.l_addstring(&b, ZString s) @cname("luaL_addstring");
-extern fn void L_Buffer.l_addvalue(&b) @cname("luaL_addvalue");
-extern fn void L_Buffer.l_pushresult(&b) @cname("luaL_pushresult");
-extern fn void L_Buffer.l_pushresultsize(&b, usz sz) @cname("luaL_pushresultsize");
-extern fn char* State.l_buffinitsize(&l, L_Buffer* b, usz sz) @cname("luaL_buffinitsize");
+extern fn void 	l_buffinit			(LuaState* l, LuaLBuffer* b) 		 @cname("luaL_buffinit");
+extern fn char* l_prepbuffsize		(LuaLBuffer* b, usz sz) 			 @cname("luaL_prepbuffsize");
+extern fn void 	l_addlstring		(LuaLBuffer* b, ZString s, usz l) 	 @cname("luaL_addlstring");
+extern fn void 	l_addstring			(LuaLBuffer* b, ZString s) 			 @cname("luaL_addstring");
+extern fn void 	l_addvalue			(LuaLBuffer* b) 					 @cname("luaL_addvalue");
+extern fn void 	l_pushresult		(LuaLBuffer* b) 					 @cname("luaL_pushresult");
+extern fn void 	l_pushresultsize	(LuaLBuffer* b, usz sz) 			 @cname("luaL_pushresultsize");
+extern fn char* l_buffinitsize		(LuaState* l, LuaLBuffer* b, usz sz) @cname("luaL_buffinitsize");
 
-macro char* L_Buffer.l_prepbuffer(&b) { return b.l_prepbuffsize(BUFFERSIZE); }
+macro char* l_prepbuffer(LuaLBuffer* b) { return b.l_prepbuffsize(BUFFERSIZE); }
 
 /* }====================================================== */
 
@@ -147,9 +144,9 @@ macro char* L_Buffer.l_prepbuffer(&b) { return b.l_prepbuffsize(BUFFERSIZE); }
 
 const FILEHANDLE = "FILE*";
 
-struct L_Stream {
+struct LuaLStream {
 	void* f;  // stream (NULL for incompletely created streams)
-	CFunction closef;  // to close stream (NULL for closed streams)
+	LuaCFunction closef;  // to close stream (NULL for closed streams)
 }
 
 /* }====================================================== */

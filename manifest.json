@@ -1,5 +1,5 @@
 {
-  "provides" : "lua",
+  "provides" : "lua54",
   "linklib-dir" : "linked-libs",
   "targets" : {
     "android-aarch64" : {
