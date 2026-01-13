@@ -1,12 +1,11 @@
 # Lua for C3
 
 A **Lua runtime/binding for the C3 programming language**.
-This project is an early-stage port of Lua to C3 and is still under active development.
+This project is an early-stage port of Lua 5.4 to C3 and is still under active development.
 
-⚠️ **Status: Experimental / Work in Progress**
+**Status: Experimental / Work in Progress**
 
 * Not all Lua features are tested
-* Much of the implementation was done manually
 * Best practices may not always be followed
 * Contributions, suggestions, and improvements are welcome
 
@@ -27,7 +26,7 @@ c3c init
 1. **Download or clone this repository**
 
 ```sh
-git clone https://github.com/MiguelCock/lua.c3l
+git clone https://github.com/MiguelCock/lua54.c3l
 ```
 
 2. **Place it inside your project’s `lib/` directory**
@@ -37,7 +36,7 @@ Your project structure should look similar to:
 ```
 my_project/
 ├── lib/
-│   └── lua/
+│   └── lua54.c3l/
 ├── src/
 ├── project.json
 └── ...
@@ -47,7 +46,7 @@ my_project/
 
 ```json
 {
-  "dependencies": [ "lua" ]
+  "dependencies": [ "lua54" ]
 }
 ```
 
@@ -66,7 +65,7 @@ Below is a minimal example showing how to:
 module lua_test;
 
 import std::io;
-import lua;
+import lua54;
 
 // Custom memory allocator for Lua
 fn void* lua_mem(void* ud, void* ptr, usz osize, usz nsize)
@@ -85,19 +84,16 @@ fn int main(String[] args)
 {
     io::printn("Hello from C3!");
 
-    lua::State* l = lua::newstate(&lua_mem, null);
-    defer l.close();
+    LuaState* l = lua::newstate(&lua_mem, null);
+    defer lua::close(l);
 
-    l.openlibs();
+    lua::openlibs(l);
 
-    ZString code =
-        "print('Hello from Lua!')\n"
-        "print('Hello from Lua!')\n";
+    ZString code = "print('Hello from Lua!')\n";
 
-    if (l.l_dostring(code) != lua::OK) {
-        ZString error = l.tostring(-1);
-        io::printfn("Lua error: %s\n", error);
-        l.pop(1);
+    if (lua::l_dostring(l, code) != lua::OK) {
+        io::printfn("Lua error: %s\n", lua::tostring(l, -1));
+        lua::pop(l, 1);
     }
 
     return 0;
